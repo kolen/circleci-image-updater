@@ -7,8 +7,9 @@ require_relative "logging"
 
 # Applies edits to .circleci/config.yml
 class ConfigPatcher
-  def initialize(content)
+  def initialize(content, repo_pattern: nil)
     @original_content = content
+    @repo_pattern = repo_pattern || "\w+/\w+"
   end
 
   def docker_repo
@@ -25,8 +26,8 @@ class ConfigPatcher
 
   def patched(new_hash)
     @original_content.gsub(
-      /(^\s*- image: \w+\/\w+:[0-9a-zA-z_.-]+)(@sha256:\w+)?(?=\s*$)/,
-      "\\1#{new_hash}"
+      /(^\s*- image: #{@repo_pattern}:[0-9a-zA-z_.-]+)(@sha256:\w+)?(?=\s*$)/,
+      "\\1@#{new_hash}"
     )
   end
 
@@ -36,7 +37,7 @@ class ConfigPatcher
     # it's ok to parse yaml with regex as we're going to modify it
     # with regexes later
     @original_match ||= @original_content.match(
-      /^\s*- image: (\w+\/\w+):([0-9a-zA-z_.-]+)(?:@(sha256:\w+))?\s*$/
+      /^\s*- image: (#{@repo_pattern}):([0-9a-zA-z_.-]+)(?:@(sha256:\w+))?\s*$/
     )
   end
 end
@@ -58,7 +59,8 @@ class ImageUpdater
       token: @config["github"]["token"]
     )
 
-    patcher = ConfigPatcher.new repo.original_config_content
+    patcher = ConfigPatcher.new repo.original_config_content,
+                                repo_pattern: config_repo["repo_pattern"]
 
     logger.debug "Repo: #{patcher.docker_repo.inspect} tag: #{patcher.docker_tag.inspect}"
     logger.debug "Original hash: #{patcher.original_hash.inspect}"
