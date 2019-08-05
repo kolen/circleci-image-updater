@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "toml"
 require_relative "repo_updater"
 require_relative "docker_api"
