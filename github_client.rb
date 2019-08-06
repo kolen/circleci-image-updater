@@ -20,12 +20,17 @@ class GithubAPIClient
   end
 
   def create_pull_request(hash, branch)
-    connection.post "pulls",
-                    title: "Bump CI docker image to #{hash[7..14]}",
-                    head: branch,
-                    base: "master",
-                    maintainer_can_modify: true,
-                    body: pull_request_body(hash)
+    logger.info "Creating PR for #{branch} (#{@repo})"
+    resp = connection.post(
+      "pulls",
+      title: "Bump CI docker image to #{hash[7..14]}",
+      head: branch,
+      base: "master",
+      maintainer_can_modify: true,
+      body: pull_request_body(hash)
+    )
+    logger.info "Created PR #{resp['html_url']}"
+    resp["id"]
   end
 
   private
