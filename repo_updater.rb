@@ -68,16 +68,31 @@ class RepoUpdater
     remote = repo.remotes.create_anonymous url
     remote.fetch(
       "+refs/heads/master:refs/remotes/origin/master",
-      credentials: Rugged::Credentials::UserPassword.new(
-        username: @token_username,
-        password: @token
-      ),
+      credentials: credentials,
       update_tips: proc do |refname, old_oid, new_oid|
         logger.info "#{repo_path} Update ref #{refname} #{old_oid} -> #{new_oid}"
       end,
       transfer_progress: proc do |text|
         logger.debug "#{repo_path} Transfer: #{text}"
       end
+    )
+  end
+
+  def push(url, branch)
+    remote = repo.remotes.create_anonymous url
+    remote.push(
+      ["refs/heads/#{branch}"],
+      credentials: credentials,
+      update_tips: proc do |refname, old_oid, new_oid|
+        logger.info "#{repo_path} Update remote ref #{refname} #{old_oid} -> #{new_oid}"
+      end
+    )
+  end
+
+  def credentials
+    Rugged::Credentials::UserPassword.new(
+      username: @token_username,
+      password: @token
     )
   end
 end

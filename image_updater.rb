@@ -97,6 +97,9 @@ class ImageUpdater
     commit = repo.create_commit updated_tree, hash: latest_hash
     logger.debug "Creating branch #{branch_name.inspect}"
     repo.create_branch branch_name, commit
+
+    logger.debug "Pushing branch #{branch_name.inspect}"
+    repo.push config_repo["url"], branch_name
   end
 
   def run
