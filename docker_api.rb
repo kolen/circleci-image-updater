@@ -2,7 +2,6 @@
 
 require "faraday"
 require "faraday_middleware"
-require "json"
 
 class DockerAPIClient
   def initialize(repo)
