@@ -52,6 +52,7 @@ class ImageUpdater
   end
 
   def run_for_repo(repo_name)
+    config_repo = @config["repos"][repo_name]
     logger.info "Running for repo #{repo_name}"
     github_id = config_repo["url"].match(%r{github.com/(\w+/\w+)/.*})[1]
 
@@ -68,7 +69,6 @@ class ImageUpdater
       return
     end
 
-    config_repo = @config["repos"][repo_name]
     repo = RepoUpdater.new(
       config_repo["dir"],
       token_username: @config["github"]["username"],
