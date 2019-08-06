@@ -56,7 +56,8 @@ class ImageUpdater
     repo = RepoUpdater.new(
       config_repo["dir"],
       token_username: @config["github"]["username"],
-      token: @config["github"]["token"]
+      token: @config["github"]["token"],
+      committer: config_repo["committer"] || @config["committer"]
     )
 
     patcher = ConfigPatcher.new repo.original_config_content,
@@ -81,7 +82,7 @@ class ImageUpdater
 
     new_config = patcher.patched(latest_hash)
 
-    branch_name = "ci-image-update-#{latest_hash[7..13]}"
+    branch_name = "ci-image-update-#{latest_hash[7..14]}"
     if repo.repo.branches[branch_name]
       logger.info "Branch #{branch_name} already exists, skipping"
       return
@@ -93,7 +94,7 @@ class ImageUpdater
     logger.debug "New config oid: #{new_config_oid.inspect}"
     updated_tree = repo.replace_file_in_tree new_config_oid
     logger.debug "New tree oid: #{updated_tree.inspect}"
-    commit = repo.create_commit updated_tree
+    commit = repo.create_commit updated_tree, hash: latest_hash
     logger.debug "Creating branch #{branch_name.inspect}"
     repo.create_branch branch_name, commit
   end

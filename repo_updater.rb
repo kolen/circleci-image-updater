@@ -2,16 +2,19 @@
 
 require "rugged"
 require_relative "logging"
+require "active_support"
+require "active_support/core_ext"
 
 class RepoUpdater
   include Logging
   attr_accessor :repo
 
-  def initialize(repo_path, token_username:, token:)
+  def initialize(repo_path, token_username:, token:, committer: nil)
     @repo_path = repo_path
     @repo = Rugged::Repository.discover(repo_path)
     @token_username = token_username
     @token = token
+    @committer = committer&.symbolize_keys
   end
 
   def original_config_content
@@ -40,13 +43,18 @@ class RepoUpdater
                     path: ".circleci/config.yml"]
   end
 
-  def create_commit(tree)
+  def commit_message(hash)
+    "Bump CircleCI docker image to #{hash[7..14]}"
+  end
+
+  def create_commit(tree, hash:)
     logger.debug "Creating commit for #{tree.inspect}"
     Rugged::Commit.create(
       repo,
       tree: tree,
-      committer: { email: "noreply@digit.az", name: "Docker image update bot", time: Time.now },
-      message: "Update image",
+      author: @committer&.merge(time: Time.now),
+      committer: @committer&.merge(time: Time.now),
+      message: commit_message(hash),
       parents: [ master.target ]
     )
   end
