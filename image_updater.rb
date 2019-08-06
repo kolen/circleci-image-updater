@@ -4,6 +4,8 @@ require "toml"
 require_relative "repo_updater"
 require_relative "docker_api"
 require_relative "logging"
+require_relative "github_api"
+require_relative "pr_tracker"
 
 # Applies edits to .circleci/config.yml
 class ConfigPatcher
@@ -51,6 +53,20 @@ class ImageUpdater
 
   def run_for_repo(repo_name)
     logger.info "Running for repo #{repo_name}"
+    github_id = config_repo["url"].match(%r{github.com/(\w+/\w+)/.*})[1]
+
+    github_client = GithubAPIClient.new(
+      repo: github_id,
+      username: @config["github"]["username"],
+      token: @config["github"]["token"]
+    )
+
+    pr_tracker = PRTracker.new
+    pr_id = pr_tracker.pr_for_repo(github_id)
+    if pr_id && github_client.pull_request_open?(pr_id)
+      logger.info "PR #{github_id}##{pr_id} is still open, skipping"
+      return
+    end
 
     config_repo = @config["repos"][repo_name]
     repo = RepoUpdater.new(
@@ -100,6 +116,10 @@ class ImageUpdater
 
     logger.debug "Pushing branch #{branch_name.inspect}"
     repo.push config_repo["url"], branch_name
+
+    logger.debug "Creating PR for #{branch_name.inspect}"
+    github_client.create_pull_request hash: latest_hash,
+                                      branch: branch_name
   end
 
   def run

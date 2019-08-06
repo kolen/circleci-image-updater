@@ -19,7 +19,7 @@ class GithubAPIClient
     resp.body["state"] == "open"
   end
 
-  def create_pull_request(hash, branch)
+  def create_pull_request(hash:, branch:)
     logger.info "Creating PR for #{branch} (#{@repo})"
     resp = connection.post(
       "pulls",
