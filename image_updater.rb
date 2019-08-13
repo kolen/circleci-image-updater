@@ -54,7 +54,7 @@ class ImageUpdater
   def run_for_repo(repo_name)
     config_repo = @config["repos"][repo_name]
     logger.info "Running for repo #{repo_name}"
-    github_id = config_repo["url"].match(%r{github.com/(\w+/\w+)/.*})[1]
+    github_id = config_repo["url"].match(%r{https://github.com/(\w+/\w+)\.git})[1]
 
     github_client = GithubAPIClient.new(
       repo: github_id,
