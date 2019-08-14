@@ -16,7 +16,7 @@ GEM
     minitest (5.11.3)
     multipart-post (2.1.1)
     parslet (1.8.2)
-    rugged (0.28.2)
+    rugged (0.28.3)
     thread_safe (0.3.6)
     toml (0.2.0)
       parslet (~> 1.8.0)
