@@ -76,6 +76,9 @@ class ImageUpdater
       committer: config_repo["committer"] || @config["committer"]
     )
 
+    logger.info "Fetching latest origin/master reference"
+    repo.fetch config_repo["url"]
+
     patcher = ConfigPatcher.new repo.original_config_content,
                                 repo_pattern: config_repo["repo_pattern"]
 
@@ -104,8 +107,6 @@ class ImageUpdater
       return
     end
 
-    logger.info "Fetching latest origin/master reference"
-    repo.fetch config_repo["url"]
     new_config_oid = repo.create_file new_config
     logger.debug "New config oid: #{new_config_oid.inspect}"
     updated_tree = repo.replace_file_in_tree new_config_oid
