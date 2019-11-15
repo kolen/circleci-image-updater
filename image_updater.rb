@@ -97,6 +97,9 @@ class ImageUpdater
       return
     end
 
+    # TODO: return if version is either blacklisted or unverified and
+    # current repo is configured to allow only verified versions
+
     logger.info "Updating .circleci/config.yml"
 
     new_config = patcher.patched(latest_hash)
