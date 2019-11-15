@@ -8,6 +8,7 @@ require "active_support/core_ext"
 class RepoUpdater
   include Logging
   attr_accessor :repo
+  attr_reader :repo_path
 
   def initialize(repo_path, token_username:, token:, committer: nil)
     @repo_path = repo_path
